@@ -20,6 +20,23 @@ package_remap = {
     "SOT-23-6-small": "SOT-23-6"
  }
 
+def readXls(filename):
+    import xlrd
+
+    entries = []
+    first_sheet = xlrd.open_workbook(filename).sheet_by_index(0)
+    rows = first_sheet.get_rows()
+    names = None
+
+    for row in rows:
+        values = list(map(lambda x: x.value, row))
+        if names == None:
+            names = values
+            continue
+        entries.append(dict(zip(names, values)))
+
+    return entries
+
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
@@ -37,7 +54,6 @@ ordered_fieldnames = OrderedDict([('Comment',None),('Designator',None),('Footpri
 writer = csv.DictWriter(out_file, delimiter=';', quoting=csv.QUOTE_NONNUMERIC, fieldnames=ordered_fieldnames)
 writer.writeheader()
 
-
 #{'Comment': '1M', 'Layer': 'TopLayer', 'Description': 'Resistor 1', 'Footprint Description': 'Chip Resistor, Body 1.6x0.8mm, IPC Medium Density', 'Designator': 'R33', 'ComponentKind': 'Standard', 'Ref-X(mm)': '291.604', 'Height(mm)': '0.600', 'Ref-Y(mm)': '79.777', 'Variation': 'Fitted', 'Pad-X(mm)': '291.604', 'Footprint': 'R-0603-M', 'Center-Y(mm)': '79.777', 'Pad-Y(mm)': '80.577', 'Rotation': '270', 'Center-X(mm)': '291.604'}
 for row in reader:
     name, value, package, num = [row['Designator'], row['Designation'], row['Package'], row['Quantity']]
@@ -49,7 +65,11 @@ for row in reader:
     if (match_lib == 1):
         partnrDic = {}
         valueDir = {}
-        partlib = csv.DictReader(open(sys.argv[3], 'r'), delimiter=';')
+        partlibname = sys.argv[3]
+        if partlibname.endswith('.xls'):
+            partlib = readXls(partlibname)
+        else:
+            partlib = csv.DictReader(open(partlibname, 'r'), delimiter=';')
 
         for part in partlib:
             lib_partnr, lib_value, lib_package, lib_parttype, lib_cat  = [part['Part #'], part['Comment'], part['Package'], part['Type'], part['Category']]
