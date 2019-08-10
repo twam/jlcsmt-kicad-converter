@@ -48,6 +48,12 @@ if (len(sys.argv) > 3):
     match_lib = 1
     print("Using LCSC part lib")
 
+    partlibname = sys.argv[3]
+    if partlibname.endswith('.xls'):
+        partlib = readXls(partlibname)
+    else:
+        partlib = csv.DictReader(open(partlibname, 'r'), delimiter=';')
+
 reader = csv.DictReader(in_file, delimiter=';')
 
 ordered_fieldnames = OrderedDict([('Comment',None),('Designator',None),('Footprint',None),('LCSC Part #',None),('LCSC Part Type',None)])
@@ -65,11 +71,6 @@ for row in reader:
     if (match_lib == 1):
         partnrDic = {}
         valueDir = {}
-        partlibname = sys.argv[3]
-        if partlibname.endswith('.xls'):
-            partlib = readXls(partlibname)
-        else:
-            partlib = csv.DictReader(open(partlibname, 'r'), delimiter=';')
 
         for part in partlib:
             lib_partnr, lib_value, lib_package, lib_parttype, lib_cat  = [part['Part #'], part['Comment'], part['Package'], part['Type'], part['Category']]
